@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Trick-or-Treat Controller</title>
+    <meta name="description" content="Trick-or-Treat Control Station">
+    <meta name="author" content="Cameron Woods - 2020">
+
+    <style>
+        Button {
+            background-color: #111111;
+            -moz-border-radius: 8px;
+            -webkit-border-radius: 8px;
+            border-radius: 8px;
+            border: 2px solid #9E4D02;
+            display: inline-block;
+            cursor: pointer;
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 14px;
+            padding: 15px 15px;
+            text-decoration: none;
+            margin: 4px;
+            width: max-content;
+        }
+        
+        Button:hover {
+            background-color: #333333;
+        }
+        
+        Button:active {
+            position: relative;
+            top: 2px;
+            left: 2px;
+        }
+        
+        hr {
+            color: #9E4D02;
+        }
+        
+        h1 {
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 10px;
+            margin-bottom: 0px;
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 1.4rem;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+        
+        h2 {
+            width: 70%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 20px;
+            margin-bottom: 2px;
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 0.9rem;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+        
+        h3 {
+            width: auto;
+            margin-left: 3px;
+            margin-right: 3px;
+            margin-top: 2px;
+            margin-bottom: 20px;
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        h4 {
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .h5 {
+            height: auto;
+            width: auto;
+            margin-top: 5px;
+            margin-bottom: 0px;
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: underline;
+            text-align: center;
+        }
+        
+        ul {
+            padding-left: 0px;
+            margin-top: 5px;
+            list-style: none;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        li {
+            height: auto;
+            width: auto;
+            color: #FF7B00;
+            font-family: Arial;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        video {
+            border: 2px solid #9E4D02;
+            margin: 0.5vh;
+        }
+        
+        .messageButton {
+            font-size: 15px;
+            padding: 10px 10px;
+            border: 1px solid #9E4D02;
+            display: inline;
+            margin: 0.5rem;
+        }
+    </style>
+
+</head>
+
+<body class="body" id="body" style="background-color: #252525;">
+    <div style="display:flex;align-items:center;flex-direction: column; margin-top: 1vh;">
+        <div id="connection_Status" style="display:flex;align-items:center;flex-direction: row;">
+            <h1 style="height: 90vh; margin-top: 25vh;">No Connection!</h1>
+        </div>
+
+        <div style="display: flex; flex-direction: row; margin-top: 0.5vh; margin-bottom: -1vh; align-items: baseline;">
+            <div style="display:flex; align-items:stretch; flex-direction: row; margin-top: 1vh; margin-right: 1.5rem;">
+                <h3>Terminal Connected: </h3>
+                <h3 id="terminal_Connected">NULL</h3>
+            </div>
+
+            <button id="connectVideo_button" style="font-size: 1.2rem; padding: 5px;">Connect Video</button>
+
+            <div style="display:flex; align-items:stretch; flex-direction: row; margin-top: 1vh; margin-left: 1.5rem;">
+                <h3>Total Trickers Treated: </h3>
+                <h3 id="tots_Served">NULL</h3>
+            </div>
+        </div>
+        <div id="remote_Displays" style="display:flex;align-items:center;flex-direction: column; min-height: 30vh; width: 90vw;">
+            <div style="display: flex; flex-direction: row;">
+                <video id="Video1" autoplay src="null" style="width: calc(36vh * 1.78); height: 36vh; transform: translate(0%, 38%) rotate(90deg); margin-right: -5vw;"></video>
+                <video id="Video3" autoplay src="null" style="width: 36vh; height: calc(36vh * 1.78);"></video>
+                <video id="Video2" autoplay src="null" style="width: calc(36vh * 1.78); height: 36vh; transform: translate(0%, 38%) rotate(-90deg); margin-left: -5vw"></video>
+                <audio id="Audio0" autoplay src="null"></audio>
+            </div>
+        </div>
+        <hr style="width: 75vw;">
+    </div>
+
+    <div style="display:flex; align-items:flex-start; flex-direction:row; align-self: center;">
+        <div style="display:flex; flex-direction: column; width: 20vw; margin-left: 12.5vw; align-items: center;">
+            <button onclick="feed(350)" style="width: 15rem; padding: 3%; font-size: 2.5rem;">Full Treat</button>
+            <button onclick="feed(125)" style="width: 15rem; padding: 3%; font-size: 2.5rem;">1/2 Treat</button>
+            <button id="mode_Button" onclick="modeSwitch()" style="font-size: 1.5rem;">Light Shows</button>
+            <button onclick="tellJoke()" style="font-size: 1.5rem;">Tell Joke</button>
+        </div>
+
+        <div id="message_Buttons" style="display: unset; width: 55vw; text-align: center; justify-content: center;">
+            <div style="display: flex; flex-direction: row; align-items: center; justify-content: center;">
+                <h4>Custom Text:</h4>
+                <input id="CustomMessage" type="text" style="color: black; width: 35vw; height: 1rem;">
+            </div>
+        </div>
+        <div id="color_Buttons" style="display: none; width: 55vw; text-align: center;">
+
+        </div>
+    </div>
+
+
+    <!-- Include socket.io client side script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+
+    <script>
+        //Connect to Socket.IO
+        var socket = io('https://192.168.1.40');
+
+        //Notify Server that this is a control station
+        socket.emit('totControllerConnected', true);
+
+        //Setup Elements for Dynamic Updates
+        var Body = document.getElementById("body");
+
+        var div_connectionStatus = document.getElementById("connection_Status");
+        var div_remoteDisplays = document.getElementById("remote_Displays");
+        var video1 = document.getElementById("Video1");
+        var video2 = document.getElementById("Video2");
+        var video3 = document.getElementById("Video3");
+        var audio0 = document.getElementById("Audio0");
+        audio0.volume = 1;
+
+        var mode_Button = document.getElementById("mode_Button");
+        var div_messageButtons = document.getElementById("message_Buttons");
+        var customMessageBox = document.getElementById("CustomMessage");
+        var div_colorButtons = document.getElementById("color_Buttons");
+
+        var cameraCount = 0;
+
+        var connectVideo_button = document.getElementById("connectVideo_button");
+        connectVideo_button.addEventListener("click", makeCall);
+        connectVideo_button.innerHTML = "Start Stream";
+        var terminalConnected = document.getElementById("terminal_Connected");
+        var totsServed = document.getElementById("tots_Served");
+
+        var activateFeeder_button = document.getElementById("activateFeeder_button");
+        var displayMessage = document.getElementsByName("displayMessage");
+
+        var myPeerConnection = null;
+
+
+        //When Page Loads
+        window.addEventListener("load", function() {
+            customMessageBox.addEventListener('click', event => {
+                customMessageBox.value = "";
+            })
+            customMessageBox.addEventListener('keyup', event => {
+                if (event.code === 'Enter') {
+                    var message = {
+                        type: "displayMessage",
+                        data: customMessageBox.value
+                    }
+                    socket.emit('messageToTerminal', message);
+                }
+            })
+
+            //Build Messages to Send
+            messageList = [
+                "Happy Halloween!",
+                "Place your bag under the chute",
+                "Say:<br><br>Trick-Or-Treat!",
+                "Only one turn per person!",
+                "BOO!",
+                "Hi Mom/Dad!",
+                "Don't forget to wear your mask!",
+                "Ooooo Scary Costume",
+                "Cute Costume!",
+                "Thanks for coming by!",
+                "Have fun tonight!",
+                "Great Cosutme!",
+                "Haven't I seen you before?",
+                "I'm out of candy<br><br>=(<br><br>How about a trick?",
+                "Say:<br><br>Tell a Joke,<br>Party Mode,<br>or the name of a Color"
+            ]
+            for (let index = 0; index < messageList.length; index++) {
+                const element = messageList[index];
+                var button = document.createElement("button");
+                button.className = "messageButton";
+                button.innerHTML = element;
+                button.addEventListener("click", sendMessage, false);
+                div_messageButtons.appendChild(button);
+            }
+
+            //Build Colors to Send
+            colorList = [
+                "Black",
+                "Blue",
+                "Brown",
+                "Green",
+                "Orange",
+                "Pink",
+                "Purple",
+                "Red",
+                "Turquoise",
+                "White",
+                "Yellow",
+                "Party"
+            ]
+            for (let index = 0; index < colorList.length; index++) {
+                const element = colorList[index];
+                var button = document.createElement("button");
+                button.className = "colorButton";
+                button.innerHTML = element;
+                button.addEventListener("click", sendLightShow, false);
+                div_colorButtons.appendChild(button);
+            }
+
+            //Request Terminal Reload on Controller Reload
+            var message = {
+                type: "requestReload",
+                data: null
+            }
+            socket.emit('messageToTerminal', message);
+        });
+
+        socket.on('connect_error', (error) => {
+            div_connectionStatus.style.display = 'flex';
+            div_remoteDisplays.style.display = 'none';
+        });
+
+        socket.on('connect_timeout', (timeout) => {
+            div_connectionStatus.style.display = 'flex';
+            div_remoteDisplays.style.display = 'none';
+        });
+
+        socket.on('connect', () => {
+            div_connectionStatus.style.display = 'none';
+            div_remoteDisplays.style.display = 'flex';
+        });
+
+        socket.on('reconnect', () => {
+            window.location.reload();
+        });
+
+        socket.on('terminalConnectedEvent', function(data) {
+            if (data == '1') {
+                terminalConnected.innerHTML = 'True';
+            } else {
+                terminalConnected.innerHTML = 'False';
+            }
+        });
+
+        socket.on('totsServed', function(data) {
+            totsServed.innerHTML = data;
+        });
+
+        socket.on('messageFromTerminal', async(message) => {
+            console.log('Message From Terminal: ', message);
+            if (message.type === 'videoOffer') {
+                handleVideoOfferEvent(message.data);
+            } else if (message.type === 'iceCandidate') {
+                handleNewICECandidateMsg(message.data);
+            } else if (message.type === 'transceiverMid') {
+                handleTransceiverMid(message.data);
+            }
+        })
+
+        async function makeCall() {
+            connectVideo_button.disabled = true;
+            console.log("Requesting Terminal Video...");
+            // Send Terminal video request
+            var message = {
+                type: "terminalVideoRequest",
+                data: null
+            }
+            socket.emit('messageToTerminal', message);
+        }
+
+        function createPeerConnection() {
+            myPeerConnection = new RTCPeerConnection();
+            myPeerConnection.onicecandidate = handleICECandidateEvent;
+            myPeerConnection.ontrack = handleTrackEvent;
+            myPeerConnection.onnegotiationneeded = handleNegotiationNeededEvent;
+            myPeerConnection.onremovetrack = handleRemoveTrackEvent;
+            myPeerConnection.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
+            myPeerConnection.onsignalingstatechange = handleSignalingStateChangeEvent;
+            console.log("New Peer Connection Created:", myPeerConnection);
+            //Change Call Button to Hangup
+            if (myPeerConnection) {
+                connectVideo_button.removeEventListener("click", makeCall);
+                connectVideo_button.addEventListener("click", endStream);
+                connectVideo_button.innerHTML = "End Stream";
+                connectVideo_button.disabled = false;
+            }
+        }
+
+        function handleNegotiationNeededEvent(event) {
+            console.log("HandleNegotiationNeededEvent:", event);
+            myPeerConnection.createOffer().then(function(offer) {
+                    return myPeerConnection.setLocalDescription(offer);
+                })
+                .then(function() {
+                    var message = {
+                        type: "videoOffer",
+                        data: myPeerConnection.localDescription
+                    }
+                    socket.emit('messageToTerminal', message);
+
+                })
+        }
+
+        async function handleVideoOfferEvent(event) {
+            console.log("HandleVideoOfferEvent:", event);
+            if (!myPeerConnection) {
+                await createPeerConnection();
+            }
+            myPeerConnection.setRemoteDescription(event)
+                .then(function() {
+                    return myPeerConnection.createAnswer();
+                })
+                .then(function(answer) {
+                    return myPeerConnection.setLocalDescription(answer);
+                })
+                .then(function() {
+                    var message = {
+                        type: "videoAnswer",
+                        data: myPeerConnection.localDescription
+                    }
+                    socket.emit('messageToTerminal', message);
+                })
+        }
+
+        function handleICECandidateEvent(event) {
+            console.log("HandleIceCandidateEvent:", event);
+            if (event.candidate) {
+                var message = {
+                    type: "iceCandidate",
+                    data: event.candidate
+                }
+                socket.emit('messageToTerminal', message);
+            }
+        }
+
+        function handleNewICECandidateMsg(msg) {
+            console.log("HandleNewIceCandidateEvent:", msg)
+            var candidate = new RTCIceCandidate(msg);
+            myPeerConnection.addIceCandidate(candidate);
+        }
+
+        function handleTrackEvent(event) {
+            console.log("HandleTrackEvent:", event);
+            addMediaStream(event);
+        }
+
+        function handleRemoveTrackEvent(event) {
+            console.log("HandleRemoveTrackEvent:", event);
+        }
+
+        function handleICEConnectionStateChangeEvent(event) {
+            console.log("HandleIceConnectionStateChangeEvent:", myPeerConnection.iceConnectionState);
+        }
+
+        function handleSignalingStateChangeEvent(event) {
+            console.log("HandleSignalingStateChangeEvent:", event);
+            switch (myPeerConnection.signalingState) {
+                case "closed":
+                    endStream();
+                    break;
+            }
+        };
+
+        function handleTransceiverMid(data) {
+            console.log(data.mid, data.kind, data.label);
+            //document.getElementById("media" + data.mid + "H2").innerHTML = data.label
+        }
+
+        async function addMediaStream(track) {
+            console.log("vs ", video1.srcObject);
+            // Create New Div for each stream
+            if (track.track.kind == "video") {
+                if (!video1.srcObject) {
+                    video1.srcObject = track.streams[0];
+                } else if (!video2.srcObject) {
+                    video2.srcObject = track.streams[0];
+                } else if (!video3.srcObject) {
+                    video3.srcObject = track.streams[0];
+                }
+            } else if (track.track.kind == "audio") {
+                audio0.srcObject = track.streams[0];
+            }
+
+            var message = {
+                type: "requestMID",
+                data: track.transceiver.mid
+            }
+            socket.emit('messageToTerminal', message);
+        }
+
+        function endStream() {
+            console.log("Ending Stream!")
+            if (myPeerConnection) {
+                myPeerConnection.ontrack = null;
+                myPeerConnection.onremovetrack = null;
+                myPeerConnection.onremovestream = null;
+                myPeerConnection.onicecandidate = null;
+                myPeerConnection.oniceconnectionstatechange = null;
+                myPeerConnection.onsignalingstatechange = null;
+                myPeerConnection.onicegatheringstatechange = null;
+                myPeerConnection.onnegotiationneeded = null;
+
+                myPeerConnection.close();
+                myPeerConnection = null;
+
+                connectVideo_button.removeEventListener("click", endStream);
+                connectVideo_button.addEventListener("click", makeCall);
+                connectVideo_button.innerHTML = "Start Stream";
+                connectVideo_button.disabled = false;
+
+                var message = {
+                    type: "terminateStream",
+                    data: null
+                }
+                socket.emit('messageToTerminal', message);
+            }
+        }
+
+        function sendMessage(button) {
+            var message = {
+                type: "displayMessage",
+                data: button.currentTarget.innerHTML
+            }
+            socket.emit('messageToTerminal', message);
+        }
+
+        function sendLightShow(button) {
+            //Change Light Show
+            var message = {
+                type: "lightShowChange",
+                showName: ("color" + button.currentTarget.innerHTML)
+            }
+            socket.emit('lightShowChange', message);
+            //Make Text Match
+            var message = {
+                type: "displayMessage",
+                data: "Happy Halloween!",
+                color: button.currentTarget.innerHTML
+            }
+            socket.emit('messageToTerminal', message);
+        }
+
+        function modeSwitch() {
+            if (mode_Button.innerHTML == "Messages") {
+                mode_Button.innerHTML = "Light Shows";
+                div_messageButtons.style.display = "unset";
+                div_colorButtons.style.display = "none";
+                var message = {
+                    type: "defaultDisplay"
+                }
+                socket.emit('messageToTerminal', message);
+            } else {
+                mode_Button.innerHTML = "Messages";
+                div_messageButtons.style.display = "none";
+                div_colorButtons.style.display = "unset";
+            }
+        }
+
+        function tellJoke() {
+            socket.emit('tellJoke', null);
+        }
+
+        function feed(feedAmount) {
+            var message = {
+                data: feedAmount
+            }
+            socket.emit('runFeeder', message);
+        }
+    </script>
+
+</body>
+
+</html>

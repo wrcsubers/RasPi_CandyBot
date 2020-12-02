@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Trick-or-Treat Terminal</title>
+    <meta name="description" content="TOT Terminal">
+    <meta name="author" content="Cameron Woods - 2020">
+
+    <style>
+        body {
+            background-color: #111111;
+            font-family: 'Halloween';
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        .textFade {
+            transition: opacity 0.33s ease-in-out;
+        }
+        
+        h1 {
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 10px;
+            margin-bottom: 0px;
+            color: #777777;
+            font-size: 1.4rem;
+            font-weight: normal;
+            text-decoration: underline;
+        }
+        
+        h2 {
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
+            color: #ff9900;
+            font-size: 12.0rem;
+            font-weight: normal;
+            text-align: center;
+        }
+        
+        @font-face {
+            font-family: 'Halloween';
+            src: url('font/halloweek.woff') format('woff');
+        }
+    </style>
+
+</head>
+
+
+
+<body class="body" id="body">
+    <div style="display:flex;align-items:center;flex-direction: column; margin-top: 20px;">
+        <div id="connection_Status" style="display:flex;align-items:center;flex-direction: column;">
+            <h1 style="height: 90vh; margin-top: 25vh;">No Connection!</h1>
+        </div>
+        <div style="height: 95vh; margin-top: 2.5vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <button id="screenShareButton" onclick="screenShare()">StartScreen</button>
+            <h2 class="textFade" id="messageText">null</h2>
+            <img id="downArrow" alt="downArrow" src="null">
+        </div>
+    </div>
+
+    <!-- Include socket.io client side script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script>
+        //Connect to Socket.IO
+        var socket = io('https://192.168.1.40');
+
+        //Notify Server that this is a ToT terminal
+        socket.emit('totTerminalConnected', true);
+
+        //Setup Elements for Dynamic Updates
+        var Body = document.getElementById("body");
+
+        var div_connectionStatus = document.getElementById("connection_Status");
+
+        var messageText = document.getElementById("messageText");
+        var downArrow = document.getElementById("downArrow");
+
+        var myPeerConnection = null;
+
+
+        //When Page Loads
+        window.addEventListener("load", function() {
+            defaultDisplay();
+        });
+
+        socket.on('connect_error', (error) => {
+            div_connectionStatus.style.display = 'flex';
+        });
+
+        socket.on('connect_timeout', (timeout) => {
+            div_connectionStatus.style.display = 'flex';
+        });
+
+        socket.on('connect', () => {
+            div_connectionStatus.style.display = 'none';
+        });
+
+        socket.on('reconnect', () => {
+            window.location.reload();
+        });
+
+        socket.on('messageFromController', message => {
+            console.log('Message From Controller: ', message);
+            if (message.type === 'terminalVideoRequest') {
+                startVideoFeed();
+            } else if (message.type === 'videoAnswer') {
+                myPeerConnection.setRemoteDescription(message.data);
+            } else if (message.type === 'iceCandidate') {
+                handleNewICECandidateMsg(message.data);
+            } else if (message.type === 'terminateStream') {
+                endStream();
+            } else if (message.type === 'requestMID') {
+                sendMID(message.data);
+            } else if (message.type === 'displayMessage') {
+                displayMessage(message);
+            } else if (message.type === 'requestReload') {
+                window.location.reload();
+            } else if (message.type === 'defaultDisplay') {
+                defaultDisplay();
+            }
+        })
+
+        async function startVideoFeed() {
+            await createPeerConnection();
+            await enableWebcams();
+        };
+
+        function createPeerConnection() {
+            myPeerConnection = new RTCPeerConnection();
+            myPeerConnection.onicecandidate = handleICECandidateEvent;
+            myPeerConnection.ontrack = handleTrackEvent;
+            myPeerConnection.onnegotiationneeded = handleNegotiationNeededEvent;
+            myPeerConnection.onremovetrack = handleRemoveTrackEvent;
+            myPeerConnection.oniceconnectionstatechange = handleICEConnectionStateChangeEvent;
+            myPeerConnection.onsignalingstatechange = handleSignalingStateChangeEvent;
+            console.log("New Peer Connection Created: ", myPeerConnection);
+        };
+
+        function handleNegotiationNeededEvent(event) {
+            console.log("HandleNegotiationNeededEvent: ", event);
+            myPeerConnection.createOffer().then(function(offer) {
+                    return myPeerConnection.setLocalDescription(offer);
+                })
+                .then(function() {
+                    var message = {
+                        type: "videoOffer",
+                        data: myPeerConnection.localDescription
+                    }
+                    socket.emit('messageToController', message);
+
+                })
+        };
+
+        function handleVideoOfferEvent(event) {
+            console.log("HandleVideoOfferMessage: ", event);
+            var localStream = null;
+            createPeerConnection();
+            myPeerConnection.setRemoteDescription(event)
+                .then(function() {
+                    return myPeerConnection.createAnswer();
+                })
+                .then(function(answer) {
+                    return myPeerConnection.setLocalDescription(answer);
+                })
+                .then(function() {
+                    var message = {
+                        type: "videoAnswer",
+                        data: myPeerConnection.localDescription
+                    };
+                    socket.emit('messageToController', message);
+                })
+        };
+
+        async function enableWebcams() {
+            console.log("Enabling Webcams...");
+            var cameraCount = 0;
+            var devices = await navigator.mediaDevices.enumerateDevices();
+            console.log(devices);
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                    console.log("Found Video: ", device)
+                    navigator.mediaDevices.getUserMedia({
+                            video: {
+                                width: {
+                                    ideal: 1280
+                                },
+                                height: {
+                                    ideal: 720
+                                },
+                                deviceId: {
+                                    exact: device.deviceId
+                                },
+                                frameRate: {
+                                    ideal: 20
+                                }
+                            },
+                            audio: true
+                        })
+                        .then(function(mediaStream) {
+                            cameraCount++;
+                            mediaStream.getTracks().forEach(track => console.log(track));
+                            mediaStream.getTracks().forEach(track => {
+                                if ((cameraCount > 1) && (track.kind == 'audio')) {
+                                    track.stop
+                                } else {
+                                    console.log("Track Label: " + track.label);
+                                    myPeerConnection.addTrack(track, mediaStream)
+                                }
+                            });
+                            console.log("Media Stream: ", mediaStream);
+
+                        })
+                }
+            });
+        }
+
+        function screenShare() {
+            document.getElementById("screenShareButton").remove();
+            navigator.mediaDevices.getDisplayMedia().then(function(mediaStream) {
+                //cameraCount++;
+                mediaStream.getTracks().forEach(track => console.log(track));
+                mediaStream.getTracks().forEach(track => {
+                    myPeerConnection.addTrack(track, mediaStream)
+                });
+                console.log("Media Stream: ", mediaStream);
+
+            })
+        }
+
+        function handleICECandidateEvent(event) {
+            //console.log("HandleIceCandidateEvent: ", event);
+            if (event.candidate) {
+                var message = {
+                    type: "iceCandidate",
+                    data: event.candidate
+                };
+                socket.emit('messageToController', message);
+            };
+        };
+
+        function handleNewICECandidateMsg(msg) {
+            //console.log("HandleNewIceCandidateMessage: ", msg);
+            var candidate = new RTCIceCandidate(msg);
+            myPeerConnection.addIceCandidate(candidate);
+        };
+
+        function handleTrackEvent(event) {
+            console.log("HandleTrackEvent: ", event);
+        };
+
+        function handleRemoveTrackEvent(event) {
+            console.log("HandleRemoveTrackEvent: ", event);
+        };
+
+        function handleICEConnectionStateChangeEvent(event) {
+            //console.log("HandleIceConnectionStateChangeEvent: ", myPeerConnection.iceConnectionState);
+        };
+
+        function handleSignalingStateChangeEvent(event) {
+            //console.log("HandleSignalingStateChangeEvent: ", event);
+            switch (myPeerConnection.signalingState) {
+                case "closed":
+                    closeVideoCall();
+                    break;
+            };
+        };
+
+        function endStream() {
+            console.log("Ending Stream!")
+            if (myPeerConnection) {
+                myPeerConnection.ontrack = null;
+                myPeerConnection.onremovetrack = null;
+                myPeerConnection.onremovestream = null;
+                myPeerConnection.onicecandidate = null;
+                myPeerConnection.oniceconnectionstatechange = null;
+                myPeerConnection.onsignalingstatechange = null;
+                myPeerConnection.onicegatheringstatechange = null;
+                myPeerConnection.onnegotiationneeded = null;
+
+                myPeerConnection.close();
+                myPeerConnection = null;
+            }
+        }
+
+        function sendMID(midRequested) {
+            var transceivers = myPeerConnection.getTransceivers();
+            transceivers.forEach(element => {
+                if (element.mid == midRequested) {
+                    message = {
+                        type: "transceiverMid",
+                        data: {
+                            mid: element.mid,
+                            kind: element.sender.track.kind,
+                            label: element.sender.track.label
+                        }
+                    };
+                    socket.emit('messageToController', message);
+                }
+            });
+        }
+
+        async function displayMessage(message) {
+            messageText.style.opacity = '0';
+            await sleep(330);
+            if (message.color == null) {
+                messageText.style.color = "#ff9900"
+            } else {
+                if (message.color == "Party") {
+                    partyMode();
+                } else {
+                    messageText.style.color = message.color
+                }
+            }
+            if (message.data == "Place your bag under the chute") {
+                downArrow.src = "images/DownArrow.png";
+            } else {
+                downArrow.src = "";
+            }
+            messageText.innerHTML = message.data;
+            messageText.style.opacity = '1';
+        }
+
+        async function partyMode() {
+            for (let index = 0; index < 40; index++) {
+                let red = Math.floor(Math.random() * Math.floor(255)),
+                    green = Math.floor(Math.random() * Math.floor(255)),
+                    blue = Math.floor(Math.random() * Math.floor(255))
+                console.log("rgb(" + red.toString() + "," + green.toString() + "," + blue.toString() + ")");
+                messageText.style.color = "rgb(" + red.toString() + "," + green.toString() + "," + blue.toString() + ")";
+                await sleep(200);
+            }
+            defaultDisplay();
+        }
+
+        function defaultDisplay() {
+            var message = {
+                showName: 'fire'
+            }
+            socket.emit('lightShowChange', message);
+            let text = {
+                data: "Happy Halloween!"
+            }
+            displayMessage(text)
+        }
+
+        //Sleep Function - pass in 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function test() {
+            console.log("Running Test Function...");
+        }
+    </script>
+
+</body>
+
+</html>
