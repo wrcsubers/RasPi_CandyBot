@@ -36,5 +36,6 @@
 * Firefox browser was used on the Kiosk and Control Station.
 * I used candy which was consistent in size  as differing sizes caused unreliable feeding and jamming.
 * Due to limitations with WebRTC, in order to stream the desktop of the Kiosk display you must enable it by clicking a button on the display page.  I accomplished this by using VNC to remote into the kiosk and starting the stream.  Once enabled everything can be controlled from the control station.
+* Kiosk/Control Station must use HTTPS due to WebRTC, certificates are included.
 
 The code is a little rough around the edges, but the functionality is 100%.  Some of the code is unused and some is not complete as I ran out of time at the end of the project.  Getting WebRTC to stream audio/video was difficult for me to implement and is likely messier than it needs to be.
