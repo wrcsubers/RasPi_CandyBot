@@ -1,5 +1,7 @@
 # CandyBot: A no-touch, candy dispensing and joke telling kiosk built for socially-distanced Trick-or-Treating during the COVID-19 pandemic. 
 
+## Status: Functional
+
 #### Video of Kiosk from front: https://youtu.be/tlIEr8h296Y
 #### Video of Control Station usage: https://youtu.be/kWjWRuVtB2I
 
