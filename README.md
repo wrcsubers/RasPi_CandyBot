@@ -5,8 +5,9 @@
 #### Video of Kiosk from front: https://youtu.be/tlIEr8h296Y
 #### Video of Control Station usage: https://youtu.be/kWjWRuVtB2I
 
+![Image of CandyBot Front](https://github.com/wrcsubers/RasPi_CandyBot/blob/main/_Images/CandyBotCoverSmall.JPG)
+
 ### Kiosk consists of
-* Built using recycled pallets and scrap wood.
 * Raspberry Pi Zero W
   * Webserver for Kiosk and Control Station (NodeJS)
   * Signalling Server for WebRTC (NodeJS)
