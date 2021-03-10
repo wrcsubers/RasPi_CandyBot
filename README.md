@@ -1,12 +1,13 @@
 # CandyBot
 ### A no-touch, candy dispensing kiosk built for Trick-or-Treating during the COVID-19 pandemic. 
 
+![Image of CandyBot Front](https://github.com/wrcsubers/RasPi_CandyBot/blob/main/_Images/CandyBotCoverSmall.JPG)
+
 ### Status: Functional
 
 ### Video of Kiosk from front: https://youtu.be/tlIEr8h296Y
 ### Video of Control Station usage: https://youtu.be/kWjWRuVtB2I
 
-![Image of CandyBot Front](https://github.com/wrcsubers/RasPi_CandyBot/blob/main/_Images/CandyBotCoverSmall.JPG)
 
 ## Kiosk consists of
 * Raspberry Pi Zero W
